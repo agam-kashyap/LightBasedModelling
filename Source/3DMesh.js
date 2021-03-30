@@ -86,14 +86,31 @@ export default class Mesh
         this.gl.enableVertexAttribArray(normalLocation);
         this.gl.vertexAttribPointer(normalLocation, elementPerVertex, this.gl.FLOAT, false,0, 0);
 
+        // Inverse Transpose World Matrix
+        const transposeWorld = shader.uniform("TransposeWorldMatrix");
+        const transposeWorldMatrix = mat4.create();
+        mat4.invert(transposeWorldMatrix, this.transform.getModelMatrix());
+        mat4.transpose(transposeWorldMatrix, transposeWorldMatrix);
+        shader.setUniformMatrix4fv(transposeWorld, transposeWorldMatrix);
+
+        // uWorld and uLightWorldPosition
+        const worldLocation = shader.uniform("uWorld");
+        const worldMatrix = mat4.create();
+        mat4.multiply(worldMatrix, this.transform.getModelMatrix(), view);
+        shader.setUniformMatrix4fv(worldLocation, worldMatrix);
+
+        const LightWorldLocation = shader.uniform("uLightWorldPosition");
+        shader.setUniform3fv(LightWorldLocation, vec3.fromValues(100,100,100));
+        
         // Colors Matrix
         const uColor = shader.uniform("uColor");
-        this.gl.uniform4fv(uColor, this.color);
+        shader.setUniform4fv(uColor, this.color);
 
-        const uReverseLightDirection  = shader.uniform("uReverseLightDirection");
-        let lightdirection = vec3.fromValues(0.5,0.7,1);
-        lightdirection = vec3.normalize(lightdirection,lightdirection);
-        this.gl.uniform3fv(uReverseLightDirection, lightdirection);
+        // Reverse Lighting
+        // const uReverseLightDirection  = shader.uniform("uReverseLightDirection");
+        // let lightdirection = vec3.fromValues(0.5,0.7,1);
+        // lightdirection = vec3.normalize(lightdirection,lightdirection);
+        // this.gl.uniform3fv(uReverseLightDirection, lightdirection);
 
         const indexBuffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);

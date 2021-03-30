@@ -4,10 +4,7 @@ import vertexShaderSrc from './vertex.js';
 import fragmentShaderSrc from './fragment.js';
 import { vec3, mat4, vec4 } from 'https://cdn.skypack.dev/gl-matrix';
 import objLoader from 'https://cdn.skypack.dev/webgl-obj-loader';
-import Arrow from './Arrow.js';
-import Triangle from './Triangle.js';
 import Mesh from './3DMesh.js';
-import SuperMesh from './SuperMesh.js';
 
 /* Canvas Setup Begins */
 const renderer = new Renderer();
@@ -28,16 +25,19 @@ var proj = {
     fovy: Math.PI/3,
     aspect: window.innerWidth/ window.innerHeight,
     near: 1,
-    far: 10000,
+    far: 2000,
 }
 /************************* 
 ******* Camera Setup *****
 *************************/
 var camera = {
     eye: {
-        x: 150,
-        y: 150,
-        z: 150,
+        // x: 300/Math.sqrt(3),
+        // y: 300/Math.sqrt(3),
+        // z: 300/Math.sqrt(3),
+        x: 0,
+        y: 0,
+        z: 300,
     },
     center: {
         x: 0,
@@ -49,10 +49,11 @@ var camera = {
         y: 1,
         z: 0,
     },
-    radius: 1000,
+    radius: 300,
 }
 
-var CameraAngle = Math.PI/1000;
+var CameraAngleX = Math.PI/1000;
+var CameraAngleY = Math.PI/1000;
 var CameraAxis = vec3.fromValues(0,1,0);
 var CameraTransformMatrix = mat4.create();
 mat4.identity(CameraTransformMatrix);
@@ -60,22 +61,41 @@ mat4.identity(CameraTransformMatrix);
 /************************* 
 ** Reading Mesh objects **
 *************************/
+// var CubeAngle = 0;
+// var CubeRead=false;
+// var CubeAngleX=0;
+// var CubeRotationAxis= vec3.create();
+// vec3.set(CubeRotationAxis, 1, 0, 0);
+// var CubeColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
+// var CubeToggle=false;
+// var CubeSelected = false;
+// var CubeMesh;
+
+// fetch('./models/Cube/cube.obj')
+//     .then(response => response.text())
+//     .then(data => {
+//         var CubeMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
+//         console.log(CubeMeshObject);
+//         CubeMesh = new Mesh(gl, CubeMeshObject, CubeAngleX, CubeRotationAxis, proj, CubeColor, camera);
+//         CubeRead = true;
+//     })
+
 var CubeAngle = 0;
 var CubeRead=false;
 var CubeAngleX=0;
 var CubeRotationAxis= vec3.create();
 vec3.set(CubeRotationAxis, 1, 0, 0);
-var CubeColor = new Float32Array([0.2, 0.7, 0.6, 1.0]);
+var CubeColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
 var CubeToggle=false;
 var CubeSelected = false;
 var CubeMesh;
 
-fetch('./models/Cube/cube.obj')
+fetch('./models/sphere.obj')
     .then(response => response.text())
     .then(data => {
         var CubeMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
         console.log(CubeMeshObject);
-        CubeMesh = new Mesh(gl, CubeMeshObject, CubeAngleX, CubeRotationAxis, proj, new Float32Array([0.2, 0.7, 0.6, 1.0]), camera);
+        CubeMesh = new Mesh(gl, CubeMeshObject, CubeAngleX, CubeRotationAxis, proj, CubeColor, camera);
         CubeRead = true;
     })
 
@@ -92,186 +112,109 @@ var SetReset = false;
 /////////////////////////////////////////////////////
 window.onload = () => 
 {
-    // renderer.getCanvas().addEventListener('click', (event) =>
-    // {
-    //     animate();
-    //     let pointerX = event.clientX;
-    //     let pointerY = event.clientY;
+    renderer.getCanvas().addEventListener("mousedown", (event) => {
+        if(1)
+        {
+            let mouseX = event.clientX;
+            let mouseY = event.clientY;
 
-    //     let render_area = renderer.getCanvas().getBoundingClientRect();
-    //     pointerX = pointerX - render_area.left;
-    //     pointerY = render_area.bottom - pointerY;
+            let render_area = renderer.getCanvas().getBoundingClientRect();
+            mouseX = mouseX - render_area.left;
+            mouseY = mouseY - render_area.top;
 
-    //     var pixels = new Uint8Array(4);
-    //     gl.readPixels(pointerX, pointerY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-
-    //     if(SelectMode == true && mode_value==7)
-    //     {
-    //         // Face Selection
-    //         var FaceCube = CubeMesh.isFaceSelected(pixels);
-    //         var FaceRandom = RandomMesh.isFaceSelected(pixels);
-    //         var FaceTorus = TorusMesh.isFaceSelected(pixels);
-    //         if(FaceCube == 1)
-    //         {
-    //             RandomMesh.resetSelected();
-    //             TorusMesh.resetSelected();
-    //         }
-    //         else if(FaceRandom == 1)
-    //         {
-    //             CubeMesh.resetSelected();
-    //             TorusMesh.resetSelected();
-    //         }
-    //         else if(FaceTorus == 1)
-    //         {
-    //             CubeMesh.resetSelected();
-    //             RandomMesh.resetSelected();
-    //         }
-    //         else
-    //         {
-    //             CubeMesh.resetSelected();
-    //             RandomMesh.resetSelected();
-    //             TorusMesh.resetSelected();
-    //         }
-    //     }
-    //     else if(SelectMode == false && mode_value==7)
-    //     {
-    //         // Object Selection
-
-    //         if(pixels[0] == Math.round(CubeColor[0]*255) && pixels[1] == Math.round(CubeColor[1]*255) &&
-    //             pixels[2] >= Math.round(CubeColor[2]*255) && pixels[2] <= Math.round((CubeColor[2]+0.05)*255) && pixels[3] == Math.round(CubeColor[3]*255))
-    //             {
-    //                 CubeSelected = true;
-    //                 RandomSelected = false;
-    //                 TorusSelected = false;
-    //             }
-    //         else if(pixels[0] == Math.round(RandomColor[0]*255) && pixels[1] == Math.round(RandomColor[1]*255) &&
-    //             pixels[2] >= Math.round(RandomColor[2]*255) && pixels[2] <= Math.round((RandomColor[2]+0.03)*255) && pixels[3] == Math.round(RandomColor[3]*255))
-    //             {
-    //                 CubeSelected = false;
-    //                 RandomSelected = true;
-    //                 TorusSelected = false;
-    //             }
-    //         else if(pixels[0] == Math.round(TorusColor[0]*255) && pixels[1] == Math.round(TorusColor[1]*255) &&
-    //         pixels[2] >= Math.round(TorusColor[2]*255) && pixels[2] <= Math.round((TorusColor[2]+0.03)*255) && pixels[3] == Math.round(TorusColor[3]*255))
-    //             {
-    //                 CubeSelected = false;
-    //                 RandomSelected = false;
-    //                 TorusSelected = true;
-    //             }
-    //         else
-    //         {
-    //             CubeSelected = false;
-    //             RandomSelected = false;
-    //             TorusSelected = false;
-    //         }
-    //     }
-    // });
-
-    // renderer.getCanvas().addEventListener("mousedown", (event) => {
-    //     if(mode_value == 6)
-    //     {
-    //         let mouseX = event.clientX;
-    //         let mouseY = event.clientY;
-
-    //         let render_area = renderer.getCanvas().getBoundingClientRect();
-    //         mouseX = mouseX - render_area.left;
-    //         mouseY = mouseY - render_area.top;
-
-    //         MouseCoordinates = renderer.mouseToClipCoord(mouseX, mouseY);
+            MouseCoordinates = renderer.mouseToClipCoord(mouseX, mouseY);
             
-    //         [MouseDownX, MouseDownY] = MouseCoordinates;
-    //         CameraMouseDragY = true;
-    //     }
-    // });
-    // renderer.getCanvas().addEventListener("mouseup", (event) => {
-    //     CameraMouseDragY = false;
-    // });
+            [MouseDownX, MouseDownY] = MouseCoordinates;
+            CameraMouseDragY = true;
+        }
+    });
+    renderer.getCanvas().addEventListener("mouseup", (event) => {
+        CameraMouseDragY = false;
+    });
  
-    // document.addEventListener("mousemove" , (ev)=> {
-    //     let mouseX = ev.clientX;
-    //     let mouseY = ev.clientY;
+    document.addEventListener("mousemove" , (ev)=> {
+        let mouseX = ev.clientX;
+        let mouseY = ev.clientY;
 
-    //     let render_area = renderer.getCanvas().getBoundingClientRect();
-    //     mouseX = mouseX - render_area.left;
-    //     mouseY = mouseY - render_area.top;
+        let render_area = renderer.getCanvas().getBoundingClientRect();
+        mouseX = mouseX - render_area.left;
+        mouseY = mouseY - render_area.top;
 
-    //     MouseCoordinates = renderer.mouseToClipCoord(mouseX, mouseY);
-    //     if(CameraMouseDragY == true && mode_value == 6)
-    //     {
-    //         var moveX = MouseCoordinates[0] - MouseDownX;
-    //         var radius = 100;
-    //         if(moveX >= 0) //Moved in positive X direction
-    //         {
-    //             // radius*theta = moveX
-    //             CameraAngle = moveX/radius;
-    //             var tempCamera = camera;
-    //             tempCamera.eye.x = camera.radius * Math.sin(CameraAngle);
-    //             tempCamera.eye.y = camera.eye.y;
-    //             tempCamera.eye.z = camera.radius * Math.cos(CameraAngle);
+        MouseCoordinates = renderer.mouseToClipCoord(mouseX, mouseY);
+        if(CameraMouseDragY == true)
+        {
+            var moveX = MouseCoordinates[0] - MouseDownX;
+            var moveY = MouseCoordinates[1] - MouseDownY;
 
-    //             ArrowY.updateCamera(tempCamera);
-    //             ArrowX.updateCamera(tempCamera);
-    //             ArrowZ.updateCamera(tempCamera);
-    //             CubeMesh.updateCamera(tempCamera);
-    //             RandomMesh.updateCamera(tempCamera);
-    //             TorusMesh.updateCamera(tempCamera);
-    //             CentreTriangle.updateCamera(tempCamera);
-    //         }
-    //         else
-    //         {
-    //             CameraAngle = moveX/radius;
-    //             var tempCamera = camera;
-    //             tempCamera.eye.x = camera.radius * Math.sin(CameraAngle);
-    //             tempCamera.eye.y = camera.eye.y;
-    //             tempCamera.eye.z = camera.radius * Math.cos(CameraAngle);
+            // var tempCamera = camera;
+            if(moveX > 0)
+                {CameraAngleX = moveX/camera.radius;}
+            else
+                {CameraAngleX = moveX/camera.radius;}
+            
+            if(moveY > 0)
+                {
+                    CameraAngleY = moveY/camera.radius;
+                }
+            else
+                    CameraAngleY = moveY/camera.radius;}
 
-    //             ArrowY.updateCamera(tempCamera);
-    //             ArrowX.updateCamera(tempCamera);
-    //             ArrowZ.updateCamera(tempCamera);
-    //             CubeMesh.updateCamera(tempCamera);
-    //             RandomMesh.updateCamera(tempCamera);
-    //             TorusMesh.updateCamera(tempCamera);
-    //             CentreTriangle.updateCamera(tempCamera);
-    //         }
-    //     }
-    // });
+            // console.log(CameraAngleX);
+            if(CameraAngleX > 2*Math.PI | CameraAngleX < -2*Math.PI)
+            {
+                CameraAngleX = 0;
+            }
+            if(CameraAngleY > 2*Math.PI | CameraAngleY < -2*Math.PI)
+            {
+                CameraAngleY = 0;
+            }
+            camera.eye.x = camera.radius * Math.sin(CameraAngleX)*Math.cos(CameraAngleY);
+            camera.eye.z = camera.radius * Math.cos(CameraAngleX)*Math.cos(CameraAngleY);
+            camera.eye.y = camera.radius * Math.sin(CameraAngleY);
+
+            if(CubeRead)
+                CubeMesh.updateCamera(camera);
+        }
+    );
 
 
-    // document.addEventListener("keydown", (ev) => {
+    document.addEventListener("keydown", (ev) => {
 
-    //     if(ev.key == "ArrowLeft" && mode_value == 6)
-    //     {
-    //         CameraAngle += Math.PI/100;
-    //         var tempCamera = camera;
-    //         tempCamera.eye.x = camera.radius * Math.sin(CameraAngle);
-    //         tempCamera.eye.y = camera.eye.y;
-    //         tempCamera.eye.z = camera.radius * Math.cos(CameraAngle);
-
-    //         ArrowY.updateCamera(tempCamera);
-    //         ArrowX.updateCamera(tempCamera);
-    //         ArrowZ.updateCamera(tempCamera);
-    //         CubeMesh.updateCamera(tempCamera);
-    //         RandomMesh.updateCamera(tempCamera);
-    //         TorusMesh.updateCamera(tempCamera);
-    //         CentreTriangle.updateCamera(tempCamera);
-    //     }
+        if(ev.key == "ArrowLeft")
+        {   
+            console.log(CubeMesh.translation);
+            CubeMesh.translateX -= 10
+            vec3.set(CubeMesh.translation, CubeMesh.translateX, CubeMesh.translateY, 0);
+            CubeMesh.transform.setTranslate(CubeMesh.translation);
+            CubeMesh.transform.updateMVPMatrix();
+        }
         
-    //     else if(ev.key == "ArrowRight" && mode_value == 6)
-    //     {
-    //         CameraAngle -= Math.PI/100;
-    //         var tempCamera = camera;
-    //         tempCamera.eye.x = camera.radius * Math.sin(CameraAngle);
-    //         tempCamera.eye.y = camera.eye.y;
-    //         tempCamera.eye.z = camera.radius * Math.cos(CameraAngle);
+        else if(ev.key == "ArrowRight")
+        {
+            console.log(CubeMesh.translation);
+            CubeMesh.translateX += 10
+            vec3.set(CubeMesh.translation, CubeMesh.translateX, CubeMesh.translateY, 0);
+            CubeMesh.transform.setTranslate(CubeMesh.translation);
+            CubeMesh.transform.updateMVPMatrix();
+        }
 
-    //         ArrowY.updateCamera(tempCamera);
-    //         ArrowX.updateCamera(tempCamera);
-    //         ArrowZ.updateCamera(tempCamera);
-    //         CubeMesh.updateCamera(tempCamera);
-    //         RandomMesh.updateCamera(tempCamera);
-    //         TorusMesh.updateCamera(tempCamera);
-    //         CentreTriangle.updateCamera(tempCamera);
-    //     }
+        if(ev.key == "ArrowUp")
+        {   
+            console.log(CubeMesh.translation);
+            CubeMesh.translateY += 10
+            vec3.set(CubeMesh.translation, CubeMesh.translateX, CubeMesh.translateY, 0);
+            CubeMesh.transform.setTranslate(CubeMesh.translation);
+            CubeMesh.transform.updateMVPMatrix();
+        }
+        
+        else if(ev.key == "ArrowDown")
+        {
+            console.log(CubeMesh.translation);
+            CubeMesh.translateY -= 10
+            vec3.set(CubeMesh.translation, CubeMesh.translateX, CubeMesh.translateY, 0);
+            CubeMesh.transform.setTranslate(CubeMesh.translation);
+            CubeMesh.transform.updateMVPMatrix();
+        }
 
     //     else if(ev.key == "r" && mode_value == 5)
     //     {
@@ -291,11 +234,12 @@ window.onload = () =>
     //         TorusMesh.updateMVPMatrix();        
     //     }
 
-    //     else if(ev.key == 'Escape')
-    //     {
-    //         terminate = true;
-    //     }
-    // });
+    //     else 
+        if(ev.key == 'Escape')
+        {
+            terminate = true;
+        }
+    });
 
 
 };
@@ -303,26 +247,11 @@ window.onload = () =>
 
 //////////////////////////////////////////////////////
 ////////////////////////////////////////////////////
-
-// Mouse Coordinates in Canvas system
-var mouseXElement = document.querySelector('#mousex');
-var mouseX = document.createTextNode("");
-mouseXElement.appendChild(mouseX);
-
-var mouseYElement = document.querySelector('#mousey');
-var mouseY = document.createTextNode("");
-mouseYElement.appendChild(mouseY);
-
-
 function animate()
 {
 
     renderer.clear();
-    if(typeof MouseCoordinates[0] != 'undefined')
-    {
-        mouseX.nodeValue = MouseCoordinates[0].toPrecision(4);
-        mouseY.nodeValue = MouseCoordinates[1].toPrecision(4);
-    }
+
     if(CubeRead== true)
         CubeMesh.draw(shader, false);
     
