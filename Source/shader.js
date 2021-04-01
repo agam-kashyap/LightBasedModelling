@@ -82,4 +82,9 @@ export default class Shader
     {
         this.gl.uniform3fv(uniformLocation, mat3);
     }
+
+    setUniform1f(uniformLocation, mat1)
+    {
+        this.gl.uniform1f(uniformLocation, mat1);
+    }
 }

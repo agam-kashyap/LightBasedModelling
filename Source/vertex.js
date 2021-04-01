@@ -11,8 +11,10 @@ const vertexShaderSrc= `
     
     // Point Light
     uniform vec3 uLightWorldPosition;
+    uniform vec3 uViewWorldPosition;
     uniform mat4 uWorld;
     varying vec3 vSurfaceToLight;
+    varying vec3 vSurfacetoView;
 
     void main() {
         gl_Position = Project * View * Model * vec4(aPosition, 1);
@@ -21,7 +23,7 @@ const vertexShaderSrc= `
 
         vec3 surfaceWorldPosition = (Model* vec4(aPosition,1)).xyz;
         vSurfaceToLight = uLightWorldPosition - surfaceWorldPosition;
-        // vSurfaceToLight = vec3(100,100,0) - surfaceWorldPosition;
+        vSurfacetoView = uViewWorldPosition - surfaceWorldPosition;
     }
 `;
 

@@ -61,25 +61,6 @@ mat4.identity(CameraTransformMatrix);
 /************************* 
 ** Reading Mesh objects **
 *************************/
-// var CubeAngle = 0;
-// var CubeRead=false;
-// var CubeAngleX=0;
-// var CubeRotationAxis= vec3.create();
-// vec3.set(CubeRotationAxis, 1, 0, 0);
-// var CubeColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
-// var CubeToggle=false;
-// var CubeSelected = false;
-// var CubeMesh;
-
-// fetch('./models/Cube/cube.obj')
-//     .then(response => response.text())
-//     .then(data => {
-//         var CubeMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
-//         console.log(CubeMeshObject);
-//         CubeMesh = new Mesh(gl, CubeMeshObject, CubeAngleX, CubeRotationAxis, proj, CubeColor, camera);
-//         CubeRead = true;
-//     })
-
 var CubeAngle = 0;
 var CubeRead=false;
 var CubeAngleX=0;
@@ -90,15 +71,77 @@ var CubeToggle=false;
 var CubeSelected = false;
 var CubeMesh;
 
-fetch('./models/sphere.obj')
+fetch('./models/Cube/cube.obj')
     .then(response => response.text())
     .then(data => {
         var CubeMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
-        console.log(CubeMeshObject);
+        // console.log(CubeMeshObject);
         CubeMesh = new Mesh(gl, CubeMeshObject, CubeAngleX, CubeRotationAxis, proj, CubeColor, camera);
         CubeRead = true;
     })
 
+////////////////////////////////////////////////////
+////////////////////Sphere//////////////////////////
+var SphereAngle = 0;
+var SphereRead=false;
+var SphereAngleX=0;
+var SphereRotationAxis= vec3.create();
+vec3.set(SphereRotationAxis, 1, 0, 0);
+var SphereColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
+var SphereToggle=false;
+var SphereSelected = false;
+var SphereMesh;
+
+fetch('./models/Sphere/sphere.obj')
+    .then(response => response.text())
+    .then(data => {
+        var SphereMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
+        // console.log(SphereMeshObject);
+        SphereMesh = new Mesh(gl, SphereMeshObject, SphereAngleX, SphereRotationAxis, proj, SphereColor, camera);
+        SphereRead = true;
+    })
+
+////////////////////////////////////////////////////
+////////////////////Deer//////////////////////////
+var DeerAngle = 0;
+var DeerRead=false;
+var DeerAngleX=0;
+var DeerRotationAxis= vec3.create();
+vec3.set(DeerRotationAxis, 1, 0, 0);
+var DeerColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
+var DeerToggle=false;
+var DeerSelected = false;
+var DeerMesh;
+
+fetch('./models/Deer/deer.obj')
+    .then(response => response.text())
+    .then(data => {
+        var DeerMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
+        // console.log(DeerMeshObject);
+        DeerMesh = new Mesh(gl, DeerMeshObject, DeerAngleX, DeerRotationAxis, proj, DeerColor, camera);
+        DeerRead = true;
+    })
+
+////////////////////////////////////////////////////
+////////////////////Monkey//////////////////////////
+var MonkeyAngle = 0;
+var MonkeyRead=false;
+var MonkeyAngleX=0;
+var MonkeyRotationAxis= vec3.create();
+vec3.set(MonkeyRotationAxis, 1, 0, 0);
+var MonkeyColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
+var MonkeyToggle=false;
+var MonkeySelected = false;
+var MonkeyMesh;
+
+fetch('./models/monkey.obj')
+    .then(response => response.text())
+    .then(data => {
+        var MonkeyMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
+        console.log(MonkeyMeshObject);
+        MonkeyMesh = new Mesh(gl, MonkeyMeshObject, MonkeyAngleX, MonkeyRotationAxis, proj, MonkeyColor, camera);
+        MonkeyRead = true;
+    })
 
 ////////////////////////////////////////////////////
 // Variables Relevant to all Modes
@@ -174,6 +217,12 @@ window.onload = () =>
 
             if(CubeRead)
                 CubeMesh.updateCamera(camera);
+            if(SphereRead)
+                SphereMesh.updateCamera(camera);
+            if(MonkeyRead)
+                MonkeyMesh.updateCamera(camera);
+            if(DeerRead)
+                DeerMesh.updateCamera(camera);
         }
     );
 
@@ -182,25 +231,32 @@ window.onload = () =>
 
         if(ev.key == "ArrowLeft")
         {   
-            console.log(CubeMesh.translation);
             CubeMesh.translateX -= 10
             vec3.set(CubeMesh.translation, CubeMesh.translateX, CubeMesh.translateY, 0);
             CubeMesh.transform.setTranslate(CubeMesh.translation);
             CubeMesh.transform.updateMVPMatrix();
+
+            MonkeyMesh.translateX -= 10
+            vec3.set(MonkeyMesh.translation, MonkeyMesh.translateX, MonkeyMesh.translateY, 0);
+            MonkeyMesh.transform.setTranslate(MonkeyMesh.translation);
+            MonkeyMesh.transform.updateMVPMatrix();
         }
         
         else if(ev.key == "ArrowRight")
         {
-            console.log(CubeMesh.translation);
             CubeMesh.translateX += 10
             vec3.set(CubeMesh.translation, CubeMesh.translateX, CubeMesh.translateY, 0);
             CubeMesh.transform.setTranslate(CubeMesh.translation);
             CubeMesh.transform.updateMVPMatrix();
+
+            MonkeyMesh.translateX += 10
+            vec3.set(MonkeyMesh.translation, MonkeyMesh.translateX, MonkeyMesh.translateY, 0);
+            MonkeyMesh.transform.setTranslate(MonkeyMesh.translation);
+            MonkeyMesh.transform.updateMVPMatrix();
         }
 
         if(ev.key == "ArrowUp")
         {   
-            console.log(CubeMesh.translation);
             CubeMesh.translateY += 10
             vec3.set(CubeMesh.translation, CubeMesh.translateX, CubeMesh.translateY, 0);
             CubeMesh.transform.setTranslate(CubeMesh.translation);
@@ -209,7 +265,6 @@ window.onload = () =>
         
         else if(ev.key == "ArrowDown")
         {
-            console.log(CubeMesh.translation);
             CubeMesh.translateY -= 10
             vec3.set(CubeMesh.translation, CubeMesh.translateX, CubeMesh.translateY, 0);
             CubeMesh.transform.setTranslate(CubeMesh.translation);
@@ -252,9 +307,18 @@ function animate()
 
     renderer.clear();
 
-    if(CubeRead== true)
-        CubeMesh.draw(shader, false);
+    // if(CubeRead== true)
+    //     CubeMesh.draw(shader, false);
     
+    // if(SphereRead== true)
+    //     SphereMesh.draw(shader, false);
+
+    if(MonkeyRead== true)
+        MonkeyMesh.draw(shader, false);
+    
+    // if(DeerRead== true)
+        // DeerMesh.draw(shader, false);
+
     // Activated by pressing 'Escape' key
     if(terminate == false)
         window.requestAnimationFrame(animate);
