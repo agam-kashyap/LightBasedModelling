@@ -3,7 +3,7 @@ import { vec3, mat4, vec4 } from 'https://cdn.skypack.dev/gl-matrix';
 
 export default class Mesh 
 {
-    constructor(gl, MeshOBJect, rotationAngle, rotationAxis, proj, color, camera)
+    constructor(gl, MeshOBJect, rotationAngle, rotationAxis, proj, color, camera, scaling, lightproperties)
     {
         this.vertexAttributesData = new Float32Array(MeshOBJect.vertices);
         this.vertexIndices = new Uint16Array(MeshOBJect.indices);
@@ -34,7 +34,7 @@ export default class Mesh
         this.scale = vec3.create();
         this.translateX = 0;
         this.translateY = 0;
-        this.scalingVal = 70.0;
+        this.scalingVal = scaling;
         vec3.set(this.translation, this.translateX, this.translateY, 0);
         vec3.set(this.scale, this.scalingVal, this.scalingVal, this.scalingVal);
         this.transform.setScale(this.scale);
@@ -49,6 +49,7 @@ export default class Mesh
         this.up = vec3.fromValues(camera.up.x, camera.up.y, camera.up.z);
 
         this.selectedColor = vec4.fromValues(0.1, 0.1, 0.1, 1);
+        this.lightProps = lightproperties;
     }
 
     draw(shader, toggle)
@@ -94,15 +95,15 @@ export default class Mesh
         // Setting the numerator for attenuation
         shader.setUniform1f(maxDist, MaxDistancefromSurface);
 
-        var limit = 0.5 * (180/ Math.PI);
+        var limit = this.lightProps.getLimit() * (180/ Math.PI);
         // Object Properties
-        var shininessVal = 150;
-        var Ka = 1.0;
-        var Kd = 1.0;
-        var Ks = 1.0;
-        var AmbientColor = vec3.fromValues(0.0,0.0,0.0);
-        var DiffuseColor = vec3.fromValues(0.1, 0.4, 0.0);
-        var SpecularColor = vec3.fromValues(1.0,1.0,1.0);
+        var shininessVal = this.lightProps.getShine();
+        var Ka = this.lightProps.getKa();
+        var Kd = this.lightProps.getKd();
+        var Ks = this.lightProps.getKs();
+        var AmbientColor = this.lightProps.getAmbient();
+        var DiffuseColor = this.lightProps.getDiffuse();
+        var SpecularColor = this.lightProps.getSpecular();
         
 
         // Model Matrix
