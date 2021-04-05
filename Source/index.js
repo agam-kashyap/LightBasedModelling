@@ -1,7 +1,9 @@
 import Renderer from './renderer.js';
 import Shader from './shader.js';
-import vertexShaderSrc from './vertex.js';
-import fragmentShaderSrc from './fragment.js';
+import PhongVertexShaderSrc from './Shaders/Phong/vertex.js';
+import PhongFragmentShaderSrc from './Shaders/Phong/fragment.js';
+import GouradVertexShaderSrc from './Shaders/Gourad/vertex.js';
+import GouradFragmentShaderSrc from './Shaders/Gourad/fragment.js';
 import { vec3, mat4, vec4 } from 'https://cdn.skypack.dev/gl-matrix';
 import objLoader from 'https://cdn.skypack.dev/webgl-obj-loader';
 import Mesh from './3DMesh.js';
@@ -13,8 +15,9 @@ const gl = renderer.webGlContext();
 
 // renderer.clear();
 
-const shader = new Shader(gl, vertexShaderSrc, fragmentShaderSrc);
-shader.use();
+const PhongShader = new Shader(gl, PhongVertexShaderSrc, PhongFragmentShaderSrc);
+const GouradShader = new Shader(gl, GouradVertexShaderSrc, GouradFragmentShaderSrc);
+var shading = 0;
 /* Canvas Setup Ends */
 
 
@@ -76,7 +79,7 @@ var Gold = new LightProperties(1.0, 1.0, 1.0,
     vec3.fromValues(0.752, 0.606, 0.226),
     vec3.fromValues(0.628, 0.556, 0.366),
     10,
-    Math.PI/6,
+    Math.PI/8,
     vec3.fromValues(100,100,100))
 /************************* 
 ** Reading Mesh objects **
@@ -89,15 +92,26 @@ vec3.set(CubeRotationAxis, 1, 0, 0);
 var CubeColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
 var CubeToggle=false;
 var CubeSelected = false;
-var CubeScaling = 70;
+var CubeScaling = 40;
 var CubeMesh;
+var CubePosition = vec3.fromValues(100,100,0);
 
 fetch('./models/Cube/cube.obj')
     .then(response => response.text())
     .then(data => {
         var CubeMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
         // console.log(CubeMeshObject);
-        CubeMesh = new Mesh(gl, CubeMeshObject, CubeAngleX, CubeRotationAxis, proj, CubeColor, camera, CubeScaling, Gold);
+        CubeMesh = new Mesh(gl, CubeMeshObject, CubeAngleX, CubeRotationAxis, proj, CubeColor, camera, CubeScaling);
+        CubeMesh.lightProps.setKa(1.0);
+        CubeMesh.lightProps.setKd(1.0);
+        CubeMesh.lightProps.setKs(1.0);
+        CubeMesh.lightProps.setAmbient(vec3.fromValues(0.0, 0.0, 0.0));
+        CubeMesh.lightProps.setDiffuse(vec3.fromValues(0.752, 0.606, 0.226));
+        CubeMesh.lightProps.setSpecular(vec3.fromValues(0.628, 0.556, 0.366))
+        CubeMesh.lightProps.setShine(10);
+        CubeMesh.lightProps.setLimit(Math.PI/8);
+        CubeMesh.transform.setTranslate(CubePosition);
+        CubeMesh.transform.updateMVPMatrix();
         CubeRead = true;
     })
 
@@ -111,15 +125,26 @@ vec3.set(SphereRotationAxis, 1, 0, 0);
 var SphereColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
 var SphereToggle=false;
 var SphereSelected = false;
-var SphereScaling = 70;
+var SphereScaling = 40;
 var SphereMesh;
+var SpherePosition = vec3.fromValues(100, -100, 0)
 
 fetch('./models/Sphere/sphere.obj')
     .then(response => response.text())
     .then(data => {
         var SphereMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
         // console.log(SphereMeshObject);
-        SphereMesh = new Mesh(gl, SphereMeshObject, SphereAngleX, SphereRotationAxis, proj, SphereColor, camera, SphereScaling, Gold);
+        SphereMesh = new Mesh(gl, SphereMeshObject, SphereAngleX, SphereRotationAxis, proj, SphereColor, camera, SphereScaling);
+        SphereMesh.lightProps.setKa(1.0);
+        SphereMesh.lightProps.setKd(1.0);
+        SphereMesh.lightProps.setKs(1.0);
+        SphereMesh.lightProps.setAmbient(vec3.fromValues(0.0, 0.0, 0.0));
+        SphereMesh.lightProps.setDiffuse(vec3.fromValues(0.752, 0.606, 0.226));
+        SphereMesh.lightProps.setSpecular(vec3.fromValues(0.628, 0.556, 0.366))
+        SphereMesh.lightProps.setShine(10);
+        SphereMesh.lightProps.setLimit(Math.PI/8);
+        SphereMesh.transform.setTranslate(SpherePosition);
+        SphereMesh.transform.updateMVPMatrix();
         SphereRead = true;
     })
 
@@ -135,13 +160,23 @@ var DeerToggle=false;
 var DeerSelected = false;
 var DeerScaling = 0.1;
 var DeerMesh;
-
+var DeerPosition = vec3.fromValues(-100, -100, 0);
 fetch('./models/Deer/deer.obj')
     .then(response => response.text())
     .then(data => {
         var DeerMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
         // console.log(DeerMeshObject);
-        DeerMesh = new Mesh(gl, DeerMeshObject, DeerAngleX, DeerRotationAxis, proj, DeerColor, camera, DeerScaling, Matte);
+        DeerMesh = new Mesh(gl, DeerMeshObject, DeerAngleX, DeerRotationAxis, proj, DeerColor, camera, DeerScaling);
+        DeerMesh.lightProps.setKa(1.0);
+        DeerMesh.lightProps.setKd(1.0);
+        DeerMesh.lightProps.setKs(1.0);
+        DeerMesh.lightProps.setAmbient(vec3.fromValues(0.0, 0.0, 0.0));
+        DeerMesh.lightProps.setDiffuse(vec3.fromValues(0.752, 0.606, 0.226));
+        DeerMesh.lightProps.setSpecular(vec3.fromValues(0.628, 0.556, 0.366))
+        DeerMesh.lightProps.setShine(10);
+        DeerMesh.lightProps.setLimit(Math.PI/8);
+        DeerMesh.transform.setTranslate(DeerPosition);
+        DeerMesh.transform.updateMVPMatrix();
         DeerRead = true;
     })
 
@@ -155,37 +190,27 @@ vec3.set(MonkeyRotationAxis, 1, 0, 0);
 var MonkeyColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
 var MonkeyToggle=false;
 var MonkeySelected = false;
-var MonkeyScaling = 70;
+var MonkeyScaling = 40;
 var MonkeyMesh;
+var MonkeyPosition = vec3.fromValues(-100, 100, 0);
 
 fetch('./models/monkey.obj')
     .then(response => response.text())
     .then(data => {
         var MonkeyMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
         // console.log(MonkeyMeshObject);
-        MonkeyMesh = new Mesh(gl, MonkeyMeshObject, MonkeyAngleX, MonkeyRotationAxis, proj, MonkeyColor, camera, MonkeyScaling, Gold);
+        MonkeyMesh = new Mesh(gl, MonkeyMeshObject, MonkeyAngleX, MonkeyRotationAxis, proj, MonkeyColor, camera, MonkeyScaling);
+        MonkeyMesh.lightProps.setKa(1.0);
+        MonkeyMesh.lightProps.setKd(1.0);
+        MonkeyMesh.lightProps.setKs(1.0);
+        MonkeyMesh.lightProps.setAmbient(vec3.fromValues(0.0, 0.0, 0.0));
+        MonkeyMesh.lightProps.setDiffuse(vec3.fromValues(0.752, 0.606, 0.226));
+        MonkeyMesh.lightProps.setSpecular(vec3.fromValues(0.628, 0.556, 0.366))
+        MonkeyMesh.lightProps.setShine(10);
+        MonkeyMesh.lightProps.setLimit(Math.PI/8);
+        MonkeyMesh.transform.setTranslate(MonkeyPosition);
+        MonkeyMesh.transform.updateMVPMatrix();
         MonkeyRead = true;
-    })
-////////////////////////////////////////////////////
-////////////////////Aircraft//////////////////////////
-var AircraftAngle = 0;
-var AircraftRead=false;
-var AircraftAngleX=0;
-var AircraftRotationAxis= vec3.create();
-vec3.set(AircraftRotationAxis, 1, 0, 0);
-var AircraftColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
-var AircraftToggle=false;
-var AircraftSelected = false;
-var AircraftScaling = 70;
-var AircraftMesh;
-
-fetch('./models/Aircraft/Aircraft.obj')
-    .then(response => response.text())
-    .then(data => {
-        var AircraftMeshObject = JSON.parse(JSON.stringify(new objLoader.Mesh(data)));
-        // console.log(AircraftMeshObject);
-        AircraftMesh = new Mesh(gl, AircraftMeshObject, AircraftAngleX, AircraftRotationAxis, proj, AircraftColor, camera, AircraftScaling);
-        AircraftRead = true;
     })
 ////////////////////////////////////////////////////
 // Variables Relevant to all Modes
@@ -333,7 +358,17 @@ window.onload = () =>
     //         TorusMesh.updateMVPMatrix();        
     //     }
 
-    //     else 
+
+        
+        else if(ev.key == "s")
+        {
+            shading += 1;
+            shading %= 2; 
+            console.log(shading);
+            // shading = 0 -> Gourad
+            // shading = 1 -> Phong
+        }
+
         if(ev.key == 'Escape')
         {
             terminate = true;
@@ -351,26 +386,57 @@ function animate()
 
     renderer.clear();
 
-    if(CubeRead== true)
-        CubeMesh.draw(shader, false);
     
-    // if(SphereRead== true)
-    //     SphereMesh.draw(shader, false);
+    if(shading == 0)
+    {
+        GouradShader.use();
+        if(CubeRead== true)
+        {
+            // GouradShader.use();
+            CubeMesh.draw(GouradShader, false);
+        }
+        if(SphereRead== true)
+        {
+            // GouradShader.use();
+            SphereMesh.draw(GouradShader, false);
+        }
 
-    // if(MonkeyRead== true)
-    //     MonkeyMesh.draw(shader, false);
-    
-    // if(DeerRead== true)
-        // DeerMesh.draw(shader, false);
+        if(MonkeyRead== true)
+        {
+            // GouradShader.use();
+            MonkeyMesh.draw(GouradShader, false);
+        }
+        if(DeerRead== true)
+        {
+            GouradShader.use()
+            DeerMesh.draw(GouradShader, false);
+        }
+    }
+    else
+    {
+        
+        if(CubeRead== true)
+        {
+            PhongShader.use();
+            CubeMesh.draw(PhongShader, false);
+        }
+        if(SphereRead== true)
+        {
+            PhongShader.use();
+            SphereMesh.draw(PhongShader, false);
+        }
+        if(MonkeyRead== true)
+        {
+            PhongShader.use();
+            MonkeyMesh.draw(PhongShader, false);
+        }
+        if(DeerRead== true)
+        {
+            PhongShader.use();
+            DeerMesh.draw(PhongShader, false);
+        }
+    }
 
-    // if(SwordRead== true)
-    //     SwordMesh.draw(shader, false);
-
-    // if(AircraftRead== true)
-    //     AircraftMesh.draw(shader, false);
-    
-    // if(BugattiRead== true)
-    //     BugattiMesh.draw(shader, false);
     // Activated by pressing 'Escape' key
     if(terminate == false)
         window.requestAnimationFrame(animate);
@@ -379,6 +445,7 @@ function animate()
 }
 
 animate();
-shader.cleanup();
+// GouradShader.cleanup();
+// PhongShader.cleanup();
 
 // Key Presses link = https://keycode.info/

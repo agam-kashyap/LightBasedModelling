@@ -1,4 +1,4 @@
-const fragmentShaderSrc = `
+const PhongFragmentShaderSrc = `
     precision mediump float;
     varying vec3 vNormal;
     varying vec3 vSurfaceToLight;
@@ -51,8 +51,9 @@ const fragmentShaderSrc = `
 
         gl_FragColor = attenuation * vec4(Ka * AmbientColor +
                                           Kd * diffuse +
-                                          Ks * specular * SpecularColor, 1.0);;
+                                          Ks * specular * SpecularColor, 1.0);
+
     }
 `;
 
-export default fragmentShaderSrc;
+export default PhongFragmentShaderSrc;

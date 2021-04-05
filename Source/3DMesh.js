@@ -1,14 +1,15 @@
-import Transform from './transform.js'
+import Transform from './transform.js';
+import LightProperties from './Light.js';
 import { vec3, mat4, vec4 } from 'https://cdn.skypack.dev/gl-matrix';
 
 export default class Mesh 
 {
-    constructor(gl, MeshOBJect, rotationAngle, rotationAxis, proj, color, camera, scaling, lightproperties)
+    constructor(gl, MeshOBJect, rotationAngle, rotationAxis, proj, color, camera, scaling)
     {
         this.vertexAttributesData = new Float32Array(MeshOBJect.vertices);
         this.vertexIndices = new Uint16Array(MeshOBJect.indices);
         this.vertexNormals = new Float32Array(MeshOBJect.vertexNormals);
-        
+        debugger;
         this.color =  color;
         this.gl = gl;
 
@@ -49,9 +50,91 @@ export default class Mesh
         this.up = vec3.fromValues(camera.up.x, camera.up.y, camera.up.z);
 
         this.selectedColor = vec4.fromValues(0.1, 0.1, 0.1, 1);
-        this.lightProps = lightproperties;
+
+
+        this.lightProps = new LightProperties();
+        var [maxX,minX,maxY,minY,maxZ,minZ] = this.findBBox();
+        var tempPos = vec4.fromValues(1.25*maxX, 1.25*maxY, 1.25*maxZ,1);
+        vec4.transformMat4(tempPos, tempPos, this.transform.getModelMatrix());
+        tempPos = vec3.fromValues(tempPos[0], tempPos[1], tempPos[2]);
+        this.lightProps.setPosition(tempPos);
     }
 
+    getMaxDistanceFromSurface()
+    {
+        var [maxX,minX,maxY,minY,maxZ,minZ] = this.findBBox();
+        var LightPos = this.getLightPos();
+        var MaxDistancefromSurface = 0;
+        var LightPosition = vec3.fromValues(LightPos[0], LightPos[1], LightPos[2]);
+        for(var i=0;i<this.vertexAttributesData.length/3;i+=1)
+        {
+            var tempPosition = vec4.fromValues(this.vertexAttributesData[i], this.vertexAttributesData[i+1], this.vertexAttributesData[i+2],1)
+            vec4.transformMat4(tempPosition, tempPosition, this.transform.getModelMatrix());
+            tempPosition = vec3.fromValues(tempPosition[0], tempPosition[1], tempPosition[2]);
+
+            i+=2;
+            if(vec3.sqrDist(tempPosition, LightPosition) > MaxDistancefromSurface)
+            {
+                MaxDistancefromSurface = vec3.sqrDist(tempPosition, LightPosition);
+            }
+        }
+        return MaxDistancefromSurface;
+    }
+
+    getLightPos()
+    {
+        return this.lightProps.getPosition();
+    }
+    translateLight(position)
+    {
+        var tempPos = [0,0,0];
+        var [maxX,minX,maxY,minY,maxZ,minZ] = this.findBBox();
+        var tempMax = vec4.fromValues(maxX, maxY, maxZ, 1);
+        var tempMin = vec4.fromValues(minX, minY, minZ, 1);
+        vec4.transformMat4(tempMax, tempMax, this.transform.getModelMatrix());
+        vec4.transformMat4(tempMin, tempMin, this.transform.getModelMatrix());
+        [maxX, maxY, maxZ, _] = tempMax;
+        [minX, minY, minZ, _] = tempMin;
+
+        if(position[0] > maxX)
+        {
+            tempPos[0] = minX;
+        }
+        else if(position[0] < minX)
+        {
+            tempPos[0] = maxX;
+        }
+        else
+        {
+            tempPos[0] = position[0];
+        }
+
+        if(position[1] > maxY)
+        {
+            tempPos[1] = minY;
+        }
+        else if(position[1] < minY)
+        {
+            tempPos[1] = maxY;
+        }
+        else
+        {
+            tempPos[1] = position[1];
+        }
+
+        if(position[2] > maxZ)
+        {
+            tempPos[2] = minZ;
+        }
+        else if(position[2] < minZ)
+        {
+            tempPos[2] = maxZ;
+        }
+        else
+        {
+            tempPos[2] = position[2];
+        }
+    }
     draw(shader, toggle)
     {
 
@@ -76,21 +159,7 @@ export default class Mesh
         const SpecularCoefficient = shader.uniform("Ks"); 
         const maxDist = shader.uniform("maxDist");
 
-        // Light Position inside BBox * 1.25
-        var [maxX,minX,maxY,minY,maxZ,minZ] = this.findBBox();
-        var LightPos = vec4.fromValues(1.25*maxX,1.25*maxY,1.25*maxZ,1);
-        vec4.transformMat4(LightPos, LightPos, this.transform.getModelMatrix());
-        var MaxDistancefromSurface = 0;
-        var LightPosition = vec3.fromValues(LightPos[0], LightPos[1], LightPos[2]);
-        for(var i=0;i<this.vertexAttributesData.length/3;i+=1)
-        {
-            var tempPosition = vec3.fromValues(this.vertexAttributesData[i], this.vertexAttributesData[i+1], this.vertexAttributesData[i+2])
-            i+=2;
-            if(vec3.sqrDist(tempPosition, LightPosition) > MaxDistancefromSurface)
-            {
-                MaxDistancefromSurface = vec3.sqrDist(tempPosition, LightPosition);
-            }
-        }
+        var MaxDistancefromSurface = this.getMaxDistanceFromSurface();
 
         // Setting the numerator for attenuation
         shader.setUniform1f(maxDist, MaxDistancefromSurface);
@@ -146,7 +215,7 @@ export default class Mesh
         shader.setUniformMatrix4fv(worldLocation, worldMatrix);
 
         // uLightWorldPosition
-        shader.setUniform3fv(LightWorldLocation, LightPosition);
+        shader.setUniform3fv(LightWorldLocation, this.lightProps.LightPos);
         
 
         // uViewWorldPosition
@@ -164,7 +233,7 @@ export default class Mesh
         var lightDirection;
         //Point the light source at the object
         var lmat = mat4.create();
-        mat4.lookAt(lmat, LightPosition, this.center, this.up);
+        mat4.lookAt(lmat, this.lightProps.LightPos, this.center, this.up);
         lightDirection = [-lmat[8], -lmat[9], -lmat[10]];
         
         shader.setUniform3fv(lightDirectionLocation, lightDirection);

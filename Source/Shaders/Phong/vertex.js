@@ -1,4 +1,4 @@
-const vertexShaderSrc= `
+const PhongVertexShaderSrc= `
     attribute vec3 aPosition;
     
     uniform mat4 Model;
@@ -27,4 +27,4 @@ const vertexShaderSrc= `
     }
 `;
 
-export default vertexShaderSrc;
+export default PhongVertexShaderSrc;
