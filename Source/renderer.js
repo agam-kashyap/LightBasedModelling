@@ -45,7 +45,7 @@ export default class Renderer
     clear()
     {
         this.gl.enable(this.gl.DEPTH_TEST);
-        this.gl.clearColor(0.5,0.5,0.0,0.5);
+        this.gl.clearColor(0.2,0.5,0.0,0.2);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
     }
 }

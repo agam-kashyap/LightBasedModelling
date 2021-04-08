@@ -16,7 +16,14 @@ const PhongVertexShaderSrc= `
     varying vec3 vSurfaceToLight;
     varying vec3 vSurfacetoView;
 
+    varying vec3 vertPos;
     void main() {
+    //     vec4 vertPos4 = View * Model * vec4(aPosition, 1.0);
+    //     vertPos = vec3(vertPos4)/ vertPos4.w;
+
+    //     vNormal = mat3(TransposeWorldMatrix) * aNormal;
+    //     gl_Position = Project * vertPos4;
+
         gl_Position = Project * View * Model * vec4(aPosition, 1);
         gl_PointSize = 5.0;
         vNormal = mat3(TransposeWorldMatrix) * aNormal;

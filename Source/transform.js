@@ -14,10 +14,13 @@ export default class Transform
 
 		this.mvpMatrix = this.modelTransformMatrix;
 
-		this.updateMVPMatrix();
 		this.tempTranslate = vec3.fromValues(0, 0, 0);
 		this.tempX = 0;
 		this.tempY = 0;
+
+		this.RotMatrix = mat4.create();
+		mat4.identity(this.RotMatrix);
+		this.updateMVPMatrix();
 	}
     
     getModelMatrix()
@@ -30,8 +33,8 @@ export default class Transform
 	{
 		mat4.identity(this.modelTransformMatrix);
         mat4.translate(this.modelTransformMatrix, this.modelTransformMatrix, this.translate);
-		mat4.rotate(this.modelTransformMatrix, this.modelTransformMatrix, this.rotationAngle, this.rotationAxis);
         mat4.scale(this.modelTransformMatrix, this.modelTransformMatrix, this.scale);
+		mat4.multiply(this.modelTransformMatrix, this.modelTransformMatrix, this.RotMatrix);
 	}
 
 	resetMVPMatrix()
@@ -65,14 +68,13 @@ export default class Transform
 		return this.scale;
 	}
 
-	setRotate(rotationAxis, rotationAngle)
+	setRotate(RotMat)
 	{
-		this.rotationAngle = rotationAngle;
-		this.rotationAxis = rotationAxis;
+		this.RotMatrix = RotMat;
 	}
 
 	getRotate()
 	{
-		return this.rotate;
+		return this.RotMatrix;
 	}
 };

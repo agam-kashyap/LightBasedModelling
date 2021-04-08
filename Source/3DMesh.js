@@ -4,12 +4,13 @@ import { vec3, mat4, vec4 } from 'https://cdn.skypack.dev/gl-matrix';
 
 export default class Mesh 
 {
-    constructor(gl, MeshOBJect, rotationAngle, rotationAxis, proj, color, camera, scaling)
+    constructor(gl, MeshOBJect, proj, color, camera, scaling, ID)
     {
+        this.id = ID;
+
         this.vertexAttributesData = new Float32Array(MeshOBJect.vertices);
         this.vertexIndices = new Uint16Array(MeshOBJect.indices);
         this.vertexNormals = new Float32Array(MeshOBJect.vertexNormals);
-        debugger;
         this.color =  color;
         this.gl = gl;
 
@@ -30,8 +31,6 @@ export default class Mesh
         this.transform.updateMVPMatrix();
 
         this.translation = vec3.create();
-        this.rotationAngle = rotationAngle;
-        this.rotationAxis = rotationAxis;
         this.scale = vec3.create();
         this.translateX = 0;
         this.translateY = 0;
@@ -40,7 +39,6 @@ export default class Mesh
         vec3.set(this.scale, this.scalingVal, this.scalingVal, this.scalingVal);
         this.transform.setScale(this.scale);
         this.transform.setTranslate(this.translation);
-        this.transform.setRotate(this.rotationAxis, this.rotationAngle);
         this.transform.updateMVPMatrix();
 
         this.proj = proj;
@@ -48,8 +46,6 @@ export default class Mesh
         this.eye = vec3.fromValues(camera.eye.x, camera.eye.y, camera.eye.z);
         this.center = vec3.fromValues(camera.center.x, camera.center.y, camera.center.z);
         this.up = vec3.fromValues(camera.up.x, camera.up.y, camera.up.z);
-
-        this.selectedColor = vec4.fromValues(0.1, 0.1, 0.1, 1);
 
 
         this.lightProps = new LightProperties();
@@ -60,6 +56,10 @@ export default class Mesh
         this.lightProps.setPosition(tempPos);
     }
 
+    getID()
+    {
+        return this.id;
+    }
     getMaxDistanceFromSurface()
     {
         var [maxX,minX,maxY,minY,maxZ,minZ] = this.findBBox();
@@ -87,14 +87,15 @@ export default class Mesh
     }
     translateLight(position)
     {
-        var tempPos = [0,0,0];
+        var dum;
+        var tempPos = position;
         var [maxX,minX,maxY,minY,maxZ,minZ] = this.findBBox();
         var tempMax = vec4.fromValues(maxX, maxY, maxZ, 1);
         var tempMin = vec4.fromValues(minX, minY, minZ, 1);
         vec4.transformMat4(tempMax, tempMax, this.transform.getModelMatrix());
         vec4.transformMat4(tempMin, tempMin, this.transform.getModelMatrix());
-        [maxX, maxY, maxZ, _] = tempMax;
-        [minX, minY, minZ, _] = tempMin;
+        [maxX, maxY, maxZ, dum] = tempMax;
+        [minX, minY, minZ, dum] = tempMin;
 
         if(position[0] > maxX)
         {
@@ -134,6 +135,7 @@ export default class Mesh
         {
             tempPos[2] = position[2];
         }
+        this.lightProps.setPosition(tempPos);
     }
     draw(shader, toggle)
     {
@@ -215,7 +217,7 @@ export default class Mesh
         shader.setUniformMatrix4fv(worldLocation, worldMatrix);
 
         // uLightWorldPosition
-        shader.setUniform3fv(LightWorldLocation, this.lightProps.LightPos);
+        shader.setUniform3fv(LightWorldLocation, this.lightProps.getPosition());
         
 
         // uViewWorldPosition
