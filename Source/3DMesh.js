@@ -54,6 +54,7 @@ export default class Mesh
         vec4.transformMat4(tempPos, tempPos, this.transform.getModelMatrix());
         tempPos = vec3.fromValues(tempPos[0], tempPos[1], tempPos[2]);
         this.lightProps.setPosition(tempPos);
+        console.log(this.lightProps.getPosition());
     }
 
     getID()
@@ -97,39 +98,39 @@ export default class Mesh
         [maxX, maxY, maxZ, dum] = tempMax;
         [minX, minY, minZ, dum] = tempMin;
 
-        if(position[0] > maxX)
+        if(position[0] > 1.25*maxX)
         {
-            tempPos[0] = minX;
+            tempPos[0] = 1.25*minX;
         }
-        else if(position[0] < minX)
+        else if(position[0] < 1.25*minX)
         {
-            tempPos[0] = maxX;
+            tempPos[0] = 1.25*maxX;
         }
         else
         {
             tempPos[0] = position[0];
         }
 
-        if(position[1] > maxY)
+        if(position[1] > 1.25*maxY)
         {
-            tempPos[1] = minY;
+            tempPos[1] = 1.25*minY;
         }
-        else if(position[1] < minY)
+        else if(position[1] < 1.25*minY)
         {
-            tempPos[1] = maxY;
+            tempPos[1] = 1.25*maxY;
         }
         else
         {
             tempPos[1] = position[1];
         }
 
-        if(position[2] > maxZ)
+        if(position[2] > 1.25*maxZ)
         {
-            tempPos[2] = minZ;
+            tempPos[2] = 1.25*minZ;
         }
-        else if(position[2] < minZ)
+        else if(position[2] < 1.25*minZ)
         {
-            tempPos[2] = maxZ;
+            tempPos[2] = 1.25*maxZ;
         }
         else
         {
@@ -240,6 +241,7 @@ export default class Mesh
         
         shader.setUniform3fv(lightDirectionLocation, lightDirection);
         shader.setUniform1f(limitLocation, Math.cos(limit));
+        // shader.setUniform1f(limitLocation, 0.5);
 
         // Set Shininess
         shader.setUniform1f(Shininess, shininessVal);

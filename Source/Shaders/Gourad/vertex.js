@@ -47,10 +47,8 @@ void main() {
     float diff = max(dot(normal, surfaceToLightDirection), 0.0);
     vec3 diffuse = diff * DiffuseColor;
 
-    // Specular Color Calculation
-    float inLight = step(uLimit, dotFromDirection);
-    light = inLight * dot(normal, surfaceToLightDirection);
-    specular = inLight * pow(dot(normal, halfvector), uShininess);
+    light = dot(normal, surfaceToLightDirection);
+    specular = pow(dot(normal, halfvector), uShininess);
 
     // Adding Attenuation
     float d = length(uLightWorldPosition - surfaceWorldPosition);

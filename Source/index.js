@@ -84,7 +84,7 @@ var Gold = {
     Ambientcolor : vec3.fromValues(0.0, 0.0, 0.0),
     DiffuseColor : vec3.fromValues(0.752, 0.606, 0.226),
     SpecularColor : vec3.fromValues(0.628, 0.556, 0.366),
-    Shine : 10,
+    Shine : 200,
     Limit : Math.PI/8
 }
 /************************* 
@@ -364,7 +364,7 @@ window.onload = () =>
             SelectedIndex = 3;
             CameraRotateMode = false;
         }
-        else if(ev.key == "2" || ev.key == "1" || ev.key == "7" || ev.key == "8" || ev.key == "9")
+        else if(ev.key == "2" || ev.key == "7" || ev.key == "8" || ev.key == "9")
         {
             SelectedIndex = -1;
             CameraRotateMode = true;
@@ -377,11 +377,27 @@ window.onload = () =>
         }
         if(ev.key == "0")
         {
-
+            for(var mesh in AllMeshArray)
+            {
+                if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
+                {
+                    AllMeshArray[mesh].lightProps.setKa(0);
+                    AllMeshArray[mesh].lightProps.setKd(0);
+                    AllMeshArray[mesh].lightProps.setKs(0);
+                }
+            }
         }
-        else if(ev.key == "1")
+        if(ev.key == "1")
         {
-
+            for(var mesh in AllMeshArray)
+            {
+                if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
+                {
+                    AllMeshArray[mesh].lightProps.setKa(1.0);
+                    AllMeshArray[mesh].lightProps.setKd(1.0);
+                    AllMeshArray[mesh].lightProps.setKs(1.0);
+                }
+            }
         }
 
         if(ev.key == "h")
@@ -391,9 +407,10 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    lightPos[0] -= 5;
                     console.log(lightPos);
-                    AllMeshArray[mesh].translateLight(lightPos); 
+                    lightPos[0] -= 10;
+                    AllMeshArray[mesh].translateLight(lightPos);
+                    console.log(AllMeshArray[mesh].getLightPos()); 
                 }
             }
         }
@@ -404,9 +421,9 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    lightPos[0] += 5;
-                    console.log(lightPos);
+                    lightPos[0] += 10;
                     AllMeshArray[mesh].translateLight(lightPos);
+                    console.log(AllMeshArray[mesh].getLightPos());
                 }
             }
         }
@@ -417,9 +434,9 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    lightPos[1] -= 5;
-                    console.log(lightPos);
+                    lightPos[1] -= 10;
                     AllMeshArray[mesh].translateLight(lightPos);
+                    console.log(AllMeshArray[mesh].getLightPos());
                 }
             }
         }
@@ -430,9 +447,9 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    lightPos[1] += 5;
-                    console.log(lightPos);
+                    lightPos[1] += 10;
                     AllMeshArray[mesh].translateLight(lightPos);
+                    console.log(AllMeshArray[mesh].getLightPos());
                 }
             }
         }
@@ -443,9 +460,9 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    lightPos[2] -= 5;
-                    console.log(lightPos);
+                    lightPos[2] -= 10;
                     AllMeshArray[mesh].translateLight(lightPos);
+                    console.log(AllMeshArray[mesh].getLightPos());
                 }
             }
         }
@@ -456,9 +473,9 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    lightPos[2] += 5;
-                    console.log(lightPos);
+                    lightPos[2] += 10;
                     AllMeshArray[mesh].translateLight(lightPos);
+                    console.log(AllMeshArray[mesh].getLightPos());
                 }
             }
         }
@@ -526,27 +543,7 @@ window.onload = () =>
                 }
             }
         }
-
-    //     else if(ev.key == "r" && mode_value == 5)
-    //     {
-    //         CentreTriangleToggle=true;
-
-    //         // Place Cube at the center of side AB of the triangle
-    //         CubeToggle = true;
-    //         CubeMesh.setRotate(vec3.fromValues(0,1,0), CubeAngle += Math.PI/2);
-    //         CubeMesh.updateMVPMatrix();
-    //         // Place Random at the center of side BC of triangle
-    //         RandomToggle = true;
-    //         RandomMesh.setRotate(vec3.fromValues(0,0,1), RandomAngle += Math.PI/2);
-    //         RandomMesh.updateMVPMatrix();
-    //         // Place Torus at the center of side CA of triangle
-    //         TorusToggle = true;
-    //         TorusMesh.setRotate(vec3.fromValues(1,0,0), TorusAngle += Math.PI/2);
-    //         TorusMesh.updateMVPMatrix();        
-    //     }
-
-
-        
+    
         else if(ev.key == "s")
         {
             shading += 1;
