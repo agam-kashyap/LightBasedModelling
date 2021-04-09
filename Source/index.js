@@ -17,7 +17,6 @@ const gl = renderer.webGlContext();
 
 const PhongShader = new Shader(gl, PhongVertexShaderSrc, PhongFragmentShaderSrc);
 const GouradShader = new Shader(gl, GouradVertexShaderSrc, GouradFragmentShaderSrc);
-var shading = 0;
 /* Canvas Setup Ends */
 
 
@@ -41,7 +40,7 @@ var camera = {
         // z: 300/Math.sqrt(3),
         x: 0,
         y: 0,
-        z: 300,
+        z: 30,
     },
     center: {
         x: 0,
@@ -53,7 +52,7 @@ var camera = {
         y: 1,
         z: 0,
     },
-    radius: 300,
+    radius: 30,
 }
 
 var CameraAngleX = Math.PI/1000;
@@ -98,9 +97,10 @@ var CubeRead=false;
 var CubeColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
 var CubeToggle=false;
 var CubeSelected = false;
-var CubeScaling = 40;
+var CubeScaling = 4;
 var CubeMesh;
-var CubePosition = vec3.fromValues(100,100,0);
+var CubePosition = vec3.fromValues(10,10,0);
+var CubeShader = 0; //Gourad
 
 fetch('./models/Cube/cube.obj')
     .then(response => response.text())
@@ -129,9 +129,10 @@ var SphereRead=false;
 var SphereColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
 var SphereToggle=false;
 var SphereSelected = false;
-var SphereScaling = 40;
+var SphereScaling = 4;
 var SphereMesh;
-var SpherePosition = vec3.fromValues(100, -100, 0)
+var SpherePosition = vec3.fromValues(10, -10, 0)
+var SphereShader = 0; //Gourad
 
 fetch('./models/Sphere/sphere.obj')
     .then(response => response.text())
@@ -160,9 +161,11 @@ var TennisRead=false;
 var TennisColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
 var TennisToggle=false;
 var TennisSelected = false;
-var TennisScaling = 3;
+var TennisScaling = 0.2;
 var TennisMesh;
-var TennisPosition = vec3.fromValues(-100, -100, 0);
+var TennisPosition = vec3.fromValues(-10, -10, 0);
+var TennisShader = 0; //Gourad
+
 fetch('./models/Tennis/tennis.obj')
     .then(response => response.text())
     .then(data => {
@@ -190,9 +193,10 @@ var MonkeyRead=false;
 var MonkeyColor = new Float32Array([0.7, 0.1, 0.2, 1.0]);
 var MonkeyToggle=false;
 var MonkeySelected = false;
-var MonkeyScaling = 40;
+var MonkeyScaling = 4;
 var MonkeyMesh;
-var MonkeyPosition = vec3.fromValues(-100, 100, 0);
+var MonkeyPosition = vec3.fromValues(-10, 10, 0);
+var MonkeyShader = 0; //Gourad
 
 fetch('./models/monkey.obj')
     .then(response => response.text())
@@ -266,16 +270,16 @@ window.onload = () =>
 
                 // var tempCamera = camera;
                 if(moveX > 0)
-                    {CameraAngleX = moveX/camera.radius;}
+                    {CameraAngleX = moveX/(20*camera.radius);}
                 else
-                    {CameraAngleX = moveX/camera.radius;}
+                    {CameraAngleX = moveX/(20*camera.radius);}
                 
                 if(moveY > 0)
                     {
-                        CameraAngleY = moveY/camera.radius;
+                        CameraAngleY = moveY/(20*camera.radius);
                     }
                 else
-                        CameraAngleY = moveY/camera.radius;}
+                        CameraAngleY = moveY/(20*camera.radius);}
 
                 // console.log(CameraAngleX);
                 if(CameraAngleX > 2*Math.PI | CameraAngleX < -2*Math.PI)
@@ -345,29 +349,34 @@ window.onload = () =>
             // Monkey
             SelectedIndex = 0;
             CameraRotateMode = false;
+            LightTranslate = 0;
         }
         else if(ev.key == "4")
         {
             // Cube
             SelectedIndex = 1;
             CameraRotateMode = false;
+            LightTranslate = 0;
         }
         else if(ev.key == "5")
         {
             // Sphere
             SelectedIndex = 2;
             CameraRotateMode = false;
+            LightTranslate = 0;
         }
         else if(ev.key == "6")
         {
             // Tennis
             SelectedIndex = 3;
             CameraRotateMode = false;
+            LightTranslate = 0;
         }
         else if(ev.key == "2" || ev.key == "7" || ev.key == "8" || ev.key == "9")
         {
             SelectedIndex = -1;
             CameraRotateMode = true;
+            LightTranslate = 0;
         }
 
         if(ev.key == "i")
@@ -381,9 +390,7 @@ window.onload = () =>
             {
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
-                    AllMeshArray[mesh].lightProps.setKa(0);
-                    AllMeshArray[mesh].lightProps.setKd(0);
-                    AllMeshArray[mesh].lightProps.setKs(0);
+                    AllMeshArray[mesh].lightProps.setLight(0);
                 }
             }
         }
@@ -393,9 +400,7 @@ window.onload = () =>
             {
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
-                    AllMeshArray[mesh].lightProps.setKa(1.0);
-                    AllMeshArray[mesh].lightProps.setKd(1.0);
-                    AllMeshArray[mesh].lightProps.setKs(1.0);
+                    AllMeshArray[mesh].lightProps.setLight(1);
                 }
             }
         }
@@ -407,10 +412,8 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    console.log(lightPos);
-                    lightPos[0] -= 10;
+                    lightPos[0] -= 1;
                     AllMeshArray[mesh].translateLight(lightPos);
-                    console.log(AllMeshArray[mesh].getLightPos()); 
                 }
             }
         }
@@ -421,9 +424,8 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    lightPos[0] += 10;
+                    lightPos[0] += 1;
                     AllMeshArray[mesh].translateLight(lightPos);
-                    console.log(AllMeshArray[mesh].getLightPos());
                 }
             }
         }
@@ -434,9 +436,8 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    lightPos[1] -= 10;
+                    lightPos[1] += 1;
                     AllMeshArray[mesh].translateLight(lightPos);
-                    console.log(AllMeshArray[mesh].getLightPos());
                 }
             }
         }
@@ -447,9 +448,8 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    lightPos[1] += 10;
+                    lightPos[1] -= 1;
                     AllMeshArray[mesh].translateLight(lightPos);
-                    console.log(AllMeshArray[mesh].getLightPos());
                 }
             }
         }
@@ -460,9 +460,8 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    lightPos[2] -= 10;
+                    lightPos[2] -= 1;
                     AllMeshArray[mesh].translateLight(lightPos);
-                    console.log(AllMeshArray[mesh].getLightPos());
                 }
             }
         }
@@ -473,9 +472,8 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex && LightTranslate == 1)
                 {
                     var lightPos = AllMeshArray[mesh].getLightPos();
-                    lightPos[2] += 10;
+                    lightPos[2] += 1;
                     AllMeshArray[mesh].translateLight(lightPos);
-                    console.log(AllMeshArray[mesh].getLightPos());
                 }
             }
         }
@@ -487,11 +485,15 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex)
                 {
                     var translation = AllMeshArray[mesh].transform.getTranslate();
-                    translation[0] -= 10;
+                    translation[0] -= 1;
                     vec3.set(AllMeshArray[mesh].translation, translation[0], translation[1], translation[2]);
                     AllMeshArray[mesh].transform.setTranslate(AllMeshArray[mesh].translation);
                     // AllMeshArray[mesh].transform.setTranslate(translation);
                     AllMeshArray[mesh].transform.updateMVPMatrix();
+
+                    var lightPos = AllMeshArray[mesh].getLightPos();
+                    lightPos[0] -= 1;
+                    AllMeshArray[mesh].translateLight(lightPos);
                 }
             }
         }
@@ -503,11 +505,15 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex)
                 {
                     var translation = AllMeshArray[mesh].transform.getTranslate();
-                    translation[0] += 10;
+                    translation[0] += 1;
                     vec3.set(AllMeshArray[mesh].translation, translation[0], translation[1], translation[2]);
                     AllMeshArray[mesh].transform.setTranslate(AllMeshArray[mesh].translation);
                     // AllMeshArray[mesh].transform.setTranslate(translation);
                     AllMeshArray[mesh].transform.updateMVPMatrix();
+
+                    var lightPos = AllMeshArray[mesh].getLightPos();
+                    lightPos[0] += 1;
+                    AllMeshArray[mesh].translateLight(lightPos);
                 }
             }
         }
@@ -519,11 +525,15 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex)
                 {
                     var translation = AllMeshArray[mesh].transform.getTranslate();
-                    translation[1] += 10;
+                    translation[1] += 1;
                     vec3.set(AllMeshArray[mesh].translation, translation[0], translation[1], translation[2]);
                     AllMeshArray[mesh].transform.setTranslate(AllMeshArray[mesh].translation);
                     // AllMeshArray[mesh].transform.setTranslate(translation);
                     AllMeshArray[mesh].transform.updateMVPMatrix();
+
+                    var lightPos = AllMeshArray[mesh].getLightPos();
+                    lightPos[1] += 1;
+                    AllMeshArray[mesh].translateLight(lightPos);
                 }
             }
         }
@@ -535,22 +545,65 @@ window.onload = () =>
                 if(AllMeshArray[mesh].getID() == SelectedIndex)
                 {
                     var translation = AllMeshArray[mesh].transform.getTranslate();
-                    translation[1] -= 10;
+                    translation[1] -= 1;
                     vec3.set(AllMeshArray[mesh].translation, translation[0], translation[1], translation[2]);
                     AllMeshArray[mesh].transform.setTranslate(AllMeshArray[mesh].translation);
+                    // AllMeshArray[mesh].transform.setTranslate(translation);
+                    AllMeshArray[mesh].transform.updateMVPMatrix();
+
+                    var lightPos = AllMeshArray[mesh].getLightPos();
+                    lightPos[1] -= 1;
+                    AllMeshArray[mesh].translateLight(lightPos);
+                }
+            }
+        }
+        
+        if(ev.key == "+")
+        {
+            for(var mesh in AllMeshArray)
+            {
+                if(AllMeshArray[mesh].getID() == SelectedIndex)
+                {
+                    var scale = AllMeshArray[mesh].transform.getScale();
+                    scale[0] += .1;
+                    scale[1] += .1;
+                    scale[2] += .1;
+                    AllMeshArray[mesh].scalingVal = scale[0];
+                    AllMeshArray[mesh].transform.setScale(scale);
+                    // AllMeshArray[mesh].transform.setTranslate(translation);
+                    AllMeshArray[mesh].transform.updateMVPMatrix();
+                    debugger;
+                }
+            }
+        }
+
+        if(ev.key == "-")
+        {
+            for(var mesh in AllMeshArray)
+            {
+                if(AllMeshArray[mesh].getID() == SelectedIndex)
+                {
+                    var scale = AllMeshArray[mesh].transform.getScale();
+                    scale[0] -= .1;
+                    scale[1] -= .1;
+                    scale[2] -= .1;
+                    AllMeshArray[mesh].scalingVal = scale[0];
+                    AllMeshArray[mesh].transform.setScale(scale);
                     // AllMeshArray[mesh].transform.setTranslate(translation);
                     AllMeshArray[mesh].transform.updateMVPMatrix();
                 }
             }
         }
-    
+
         else if(ev.key == "s")
         {
-            shading += 1;
-            shading %= 2; 
-            console.log(shading);
-            // shading = 0 -> Gourad
-            // shading = 1 -> Phong
+            for(var mesh in AllMeshArray)
+            {
+                if(AllMeshArray[mesh].getID() == SelectedIndex)
+                {
+                    AllMeshArray[mesh].setShader();
+                }
+            }
         }
 
         if(ev.key == 'Escape')
@@ -564,6 +617,36 @@ window.onload = () =>
 
 
 //////////////////////////////////////////////////////
+function LightSourcesSetup(array)
+{
+    var lights = [];
+    for(var i in array)
+    {
+        lights.push(array[i].lightProps.getStruct())
+    }
+    return lights;
+}
+//////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+var mouseXElement = document.querySelector('#mousex');
+var mouseX = document.createTextNode("");
+mouseXElement.appendChild(mouseX);
+
+var mouseYElement = document.querySelector('#mousey');
+var mouseY = document.createTextNode("");
+mouseYElement.appendChild(mouseY);
+
+var SelectedObject = document.querySelector('#ObjSel');
+var selObjName = document.createTextNode("");
+SelectedObject.appendChild(selObjName);
+
+var LightMode = document.querySelector('#Mode');
+var lightMode = document.createTextNode("");
+LightMode.appendChild(lightMode);
+
+var Shading = document.querySelector('#shading');
+var shadingMode = document.createTextNode("");
+Shading.appendChild(shadingMode);
 ////////////////////////////////////////////////////
 function animate()
 {
@@ -571,39 +654,87 @@ function animate()
     renderer.clear();
 
     
-    if(shading == 0)
+    if(SelectedIndex == 0)
     {
-        GouradShader.use();
-        if(CubeRead && SphereRead && MonkeyRead && TennisRead)
+        selObjName.nodeValue = "Monkey";
+        for(var i in AllMeshArray)
         {
-            for(var i in AllMeshArray)
+            if(AllMeshArray[i].getID() == 0)
             {
-                AllMeshArray[i].draw(GouradShader, false);
+                if(AllMeshArray[i].getShader() == 0)
+                {
+                    shadingMode.nodeValue = "Gourad";
+                }
+                else
+                {
+                    shadingMode.nodeValue = "Phong";
+                }
             }
         }
     }
+    else if(SelectedIndex == 1)
+    {
+        selObjName.nodeValue = "Cube";
+
+    }
+    else if(SelectedIndex == 2)
+    {
+        selObjName.nodeValue = "Sphere";
+    }
+    else if(SelectedIndex == 3)
+    {
+        selObjName.nodeValue = "Tennis";
+    }
     else
     {
+        selObjName.nodeValue = "None";
+    }
+
+    if(SelectedIndex != -1)
+    {
+
+        document.getElementsByClassName('shading')[0].style.display = 'block';
+        document.getElementsByClassName('lightMode')[0].style.display = 'block';
+        if(LightTranslate == 0)
+        {
+            lightMode.nodeValue = "OFF"
+        }
+        else
+        {
+            lightMode.nodeValue = "ON"
+        }
         
-        if(CubeRead== true)
+    }
+    else
+    {
+        document.getElementsByClassName('shading')[0].style.display = 'none';
+        document.getElementsByClassName('lightMode')[0].style.display = 'none';
+    }
+
+
+    if(typeof MouseCoordinates[0] != 'undefined')
+    {
+        mouseX.nodeValue = MouseCoordinates[0].toPrecision(4);
+        mouseY.nodeValue = MouseCoordinates[1].toPrecision(4);
+    }
+    
+    if(CubeRead && SphereRead && MonkeyRead && TennisRead)
+    {
+        var CombinedLights = LightSourcesSetup(AllMeshArray);
+        for(var i in AllMeshArray)
         {
-            PhongShader.use();
-            CubeMesh.draw(PhongShader, false);
-        }
-        if(SphereRead== true)
-        {
-            PhongShader.use();
-            SphereMesh.draw(PhongShader, false);
-        }
-        if(MonkeyRead== true)
-        {
-            PhongShader.use();
-            MonkeyMesh.draw(PhongShader, false);
-        }
-        if(TennisRead== true)
-        {
-            PhongShader.use();
-            TennisMesh.draw(PhongShader, false);
+            AllMeshArray[i].setAllLights(CombinedLights);
+            if(AllMeshArray[i].getShader() == 0)
+            {
+                GouradShader.use();
+                AllMeshArray[i].draw(GouradShader, false);
+            }
+            else
+            {
+                PhongShader.use();
+                AllMeshArray[i].draw(PhongShader, false);
+            }
+            
         }
     }
 
@@ -615,7 +746,7 @@ function animate()
 }
 
 animate();
-// GouradShader.cleanup();
-// PhongShader.cleanup();
 
 // Key Presses link = https://keycode.info/
+
+

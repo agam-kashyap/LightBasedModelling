@@ -68,6 +68,11 @@ export default class Shader
 		this.gl.uniform4f(uniformLocation, ...vec4);
     }
 
+    setUniform3fv(uniformLocation, vec3)
+	{
+		this.gl.uniform4fv(uniformLocation, vec3);
+    }
+
     setUniform4fv(uniformLocation, vec4)
 	{
 		this.gl.uniform4fv(uniformLocation, vec4);
@@ -86,5 +91,10 @@ export default class Shader
     setUniform1f(uniformLocation, mat1)
     {
         this.gl.uniform1f(uniformLocation, mat1);
+    }
+
+    setUniform1i(uniformLocation, val)
+    {
+        this.gl.uniform1i(uniformLocation, val);
     }
 }

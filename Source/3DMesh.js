@@ -50,21 +50,33 @@ export default class Mesh
 
         this.lightProps = new LightProperties();
         var [maxX,minX,maxY,minY,maxZ,minZ] = this.findBBox();
-        var tempPos = vec4.fromValues(1.25*maxX, 1.25*maxY, 1.25*maxZ,1);
+        var tempPos = vec4.fromValues(1.05*maxX, 1.05*maxY, 1.05*maxZ,1);
         vec4.transformMat4(tempPos, tempPos, this.transform.getModelMatrix());
         tempPos = vec3.fromValues(tempPos[0], tempPos[1], tempPos[2]);
         this.lightProps.setPosition(tempPos);
         console.log(this.lightProps.getPosition());
+
+        this.LightSources = [];
+
+        this.shader = 0;
     }
 
+    getShader()
+    {
+        return this.shader;
+    }
+    setShader()
+    {
+        this.shader += 1;
+        this.shader %= 2;
+    }
     getID()
     {
         return this.id;
     }
-    getMaxDistanceFromSurface()
+    getMaxDistanceFromSurface(LightPos)
     {
         var [maxX,minX,maxY,minY,maxZ,minZ] = this.findBBox();
-        var LightPos = this.getLightPos();
         var MaxDistancefromSurface = 0;
         var LightPosition = vec3.fromValues(LightPos[0], LightPos[1], LightPos[2]);
         for(var i=0;i<this.vertexAttributesData.length/3;i+=1)
@@ -91,13 +103,15 @@ export default class Mesh
         var dum;
         var tempPos = position;
         var [maxX,minX,maxY,minY,maxZ,minZ] = this.findBBox();
+        debugger;
         var tempMax = vec4.fromValues(maxX, maxY, maxZ, 1);
         var tempMin = vec4.fromValues(minX, minY, minZ, 1);
         vec4.transformMat4(tempMax, tempMax, this.transform.getModelMatrix());
         vec4.transformMat4(tempMin, tempMin, this.transform.getModelMatrix());
+
         [maxX, maxY, maxZ, dum] = tempMax;
         [minX, minY, minZ, dum] = tempMin;
-
+        debugger;
         if(position[0] > 1.25*maxX)
         {
             tempPos[0] = 1.25*minX;
@@ -138,6 +152,11 @@ export default class Mesh
         }
         this.lightProps.setPosition(tempPos);
     }
+
+    setAllLights(array)
+    {
+        this.LightSources = array;
+    }
     draw(shader, toggle)
     {
 
@@ -149,33 +168,20 @@ export default class Mesh
         const normalLocation = shader.attribute("aNormal");
         const transposeWorld = shader.uniform("TransposeWorldMatrix");
         const worldLocation = shader.uniform("uWorld");
-        const LightWorldLocation = shader.uniform("uLightWorldPosition");
-        const viewWorldPosition = shader.uniform("uViewWorldPosition");
-        const lightDirectionLocation = shader.uniform("uLightDirection");
-        const limitLocation = shader.uniform("uLimit");
-        const Shininess = shader.uniform("uShininess");
-        const Ambient = shader.uniform("AmbientColor");
-        const Diffuse = shader.uniform("DiffuseColor");
-        const Specular = shader.uniform("SpecularColor");
         const AmbientCoefficient = shader.uniform("Ka");
         const DiffuseCoefficient = shader.uniform("Kd");
         const SpecularCoefficient = shader.uniform("Ks"); 
-        const maxDist = shader.uniform("maxDist");
+        const viewWorldPosition = shader.uniform("uViewWorldPosition");
+        const Shininess = shader.uniform("uShininess");
 
-        var MaxDistancefromSurface = this.getMaxDistanceFromSurface();
 
         // Setting the numerator for attenuation
-        shader.setUniform1f(maxDist, MaxDistancefromSurface);
 
-        var limit = this.lightProps.getLimit() * (180/ Math.PI);
         // Object Properties
         var shininessVal = this.lightProps.getShine();
         var Ka = this.lightProps.getKa();
         var Kd = this.lightProps.getKd();
         var Ks = this.lightProps.getKs();
-        var AmbientColor = this.lightProps.getAmbient();
-        var DiffuseColor = this.lightProps.getDiffuse();
-        var SpecularColor = this.lightProps.getSpecular();
         
 
         // Model Matrix
@@ -217,34 +223,46 @@ export default class Mesh
         mat4.multiply(worldMatrix, this.transform.getModelMatrix(), view);
         shader.setUniformMatrix4fv(worldLocation, worldMatrix);
 
-        // uLightWorldPosition
-        shader.setUniform3fv(LightWorldLocation, this.lightProps.getPosition());
-        
-
         // uViewWorldPosition
         shader.setUniform3fv(viewWorldPosition, this.eye); 
         
-        // Set Different Colors and Reflection Coefficients
-        shader.setUniform3fv(Ambient, AmbientColor);
-        shader.setUniform3fv(Diffuse, DiffuseColor);
-        shader.setUniform3fv(Specular, SpecularColor);
+        // Set Reflection Coefficients (Object Property)
         shader.setUniform1f(AmbientCoefficient, Ka);
         shader.setUniform1f(DiffuseCoefficient, Kd);
         shader.setUniform1f(SpecularCoefficient, Ks);
 
-        // Light Related Variables
-        var lightDirection;
-        //Point the light source at the object
-        var lmat = mat4.create();
-        mat4.lookAt(lmat, this.lightProps.LightPos, this.center, this.up);
-        lightDirection = [-lmat[8], -lmat[9], -lmat[10]];
-        
-        shader.setUniform3fv(lightDirectionLocation, lightDirection);
-        shader.setUniform1f(limitLocation, Math.cos(limit));
-        // shader.setUniform1f(limitLocation, 0.5);
 
         // Set Shininess
         shader.setUniform1f(Shininess, shininessVal);
+
+
+        // Setting Light Properties
+        for(var i in this.LightSources)
+        {
+            var LightWorldLocation = shader.uniform("LightPositions[" + i + "].uLightWorldPosition");
+            var lightDirectionLocation = shader.uniform("LightPositions[" + i + "].uLightDirection");
+            var Ambient = shader.uniform("LightPositions[" + i + "].AmbientColor");
+            var Diffuse = shader.uniform("LightPositions[" + i + "].DiffuseColor");
+            var Specular = shader.uniform("LightPositions[" + i + "].SpecularColor");
+            var maxDist = shader.uniform("LightPositions[" + i + "].maxDist");
+            var isOn = shader.uniform("LightPositions[" + i + "].isOn");
+
+            shader.setUniform3fv(Ambient, this.LightSources[i].AmbientColor);
+            shader.setUniform3fv(Diffuse, this.LightSources[i].DiffuseColor);
+            shader.setUniform3fv(Specular, this.LightSources[i].SpecularColor);
+
+            //Point the light source at the object
+            var lightDirection;
+            var lmat = mat4.create();
+            mat4.lookAt(lmat, this.LightSources[i].LightPos, this.center, this.up);
+            lightDirection = [-lmat[8], -lmat[9], -lmat[10]];
+            shader.setUniform3fv(lightDirectionLocation, lightDirection);
+
+            var MaxDistance = this.getMaxDistanceFromSurface(this.LightSources[i].LightPos);
+            shader.setUniform1f(maxDist, MaxDistance);
+            shader.setUniform3fv(LightWorldLocation, this.LightSources[i].LightPos);
+            shader.setUniform1i(isOn, this.LightSources[i].isOn);
+        }
 
         // Setting up of Vertices
         const indexBuffer = this.gl.createBuffer();

@@ -5,36 +5,36 @@ export default class LightProperties
 {
     constructor()
     {
-        this.ka = 1.0;
-        this.kd = 1.0;
-        this.ks = 1.0;
+        this.LightStruct = {
+            ka : 1.0,
+            kd : 1.0,
+            ks : 1.0,
 
-        this.amColor = vec3.fromValues(1.0, 1.0, 1.0);
-        this.difColor = vec3.fromValues(1.0, 1.0, 1.0);
-        this.specColor = vec3.fromValues(1.0, 1.0, 1.0);
+            AmbientColor : vec3.fromValues(1.0, 1.0, 1.0),
+            DiffuseColor : vec3.fromValues(1.0, 1.0, 1.0),
+            SpecularColor : vec3.fromValues(1.0, 1.0, 1.0), 
+            LightPos : vec3.fromValues(0,0,0),
+            isOn : 1,
+        }
 
         this.shininess = 10;
         this.limit = 0.5;
-
-        this.LightPos = vec3.fromValues(0,0,0);
-        this.transform = new Transform();
-        
     }
 
-    setKa(ka){this.ka = ka;}
-    setKd(kd){this.kd = kd;}
-    setKs(ks){this.ks = ks;}
-    setAmbient(Color){this.amColor = Color;}
-    setDiffuse(Color){this.difColor = Color;}
-    setSpecular(Color){this.specColor = Color;}
+    setKa(ka){this.LightStruct.ka = ka;}
+    setKd(kd){this.LightStruct.kd = kd;}
+    setKs(ks){this.LightStruct.ks = ks;}
+    setAmbient(Color){this.LightStruct.AmbientColor = Color;}
+    setDiffuse(Color){this.LightStruct.DiffuseColor = Color;}
+    setSpecular(Color){this.LightStruct.SpecularColor = Color;}
     setShine(shine){this.shininess = shine;}
 
-    getKa(){return this.ka;}
-    getKd(){return this.kd;}
-    getKs(){return this.ks;}
-    getAmbient(){return this.amColor;}
-    getDiffuse(){return this.difColor;}
-    getSpecular(){return this.specColor;}
+    getKa(){return this.LightStruct.ka;}
+    getKd(){return this.LightStruct.kd;}
+    getKs(){return this.LightStruct.ks;}
+    getAmbient(){return this.LightStruct.AmbientColor;}
+    getDiffuse(){return this.LightStruct.DiffuseColor;}
+    getSpecular(){return this.LightStruct.SpecularColor;}
     getShine(){return this.shininess;}
 
     getLimit()
@@ -47,11 +47,20 @@ export default class LightProperties
     }
     getPosition()
     {
-        return this.LightPos;
+        return this.LightStruct.LightPos;
     }
     setPosition(LightPos)
     {
-        this.LightPos = LightPos;
+        this.LightStruct.LightPos = LightPos;
+    }
+    getStruct()
+    {
+        return this.LightStruct;
+    }
+
+    setLight(val)
+    {
+        this.LightStruct.isOn = val;
     }
 
 };
