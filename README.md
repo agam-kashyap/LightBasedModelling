@@ -1,6 +1,7 @@
 # Assignment 3
 
-[![name](Images/Display.png)](https://light-3d-scene.netlify.app/)
+[![Click here to view live site](Images/Display.png)](https://light-3d-scene.netlify.app/)
+*Demo of the Program available*
 
 ## Overview
 This program is an introduction to lighting in 3D in WebGL and builds upon [this](https://github.com/agam-kashyap/Computer-Graphics-Vanilla3d) codebase. The program consists of four 3D objects upon which we perform various actions such as translations, rotation(using quaternions), scaling along with manipulating the shading methods and lightings. 
